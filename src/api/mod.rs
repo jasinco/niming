@@ -1,4 +1,5 @@
 mod tweet;
+
 use actix_session::SessionGetError;
 use actix_web::{HttpResponse, Responder, error, http::StatusCode, web::Json};
 use sea_orm::{DatabaseConnection, DbErr};
@@ -7,16 +8,18 @@ use strum::Display;
 use utoipa::ToSchema;
 use utoipa_actix_web::service_config::ServiceConfig;
 
+use crate::storage::Storage;
+
 pub fn api_service(config: &mut ServiceConfig) {
     // config.service(hello::get_post);
     config.service(tweet::get_tweet);
     config.service(tweet::post_tweet);
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 #[allow(dead_code)]
 pub struct AppContext {
-    pub db: DatabaseConnection,
+    pub storage: Storage,
 }
 #[derive(Debug, Display, Serialize, Clone)]
 pub enum CommonErrEnum {
@@ -35,6 +38,7 @@ pub struct CommonErrStruct {
 impl From<DbErr> for CommonErrEnum {
     fn from(value: DbErr) -> Self {
         // impl log
+        println!("DBErr {}", value.to_string());
         Self::DbErr
     }
 }
