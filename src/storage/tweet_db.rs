@@ -1,13 +1,15 @@
 use crate::db::{nick, tweet};
 use base64ct::{Base64, Encoding};
+use bincode::{Decode, Encode};
 use blake2::{Blake2b512, Digest};
 use sea_orm::{DbErr, entity::*, query::*};
 use serde::{Deserialize, Serialize};
 
-#[derive(utoipa::ToSchema, Serialize, Deserialize)]
+#[derive(utoipa::ToSchema, Serialize, Deserialize, Encode, Decode)]
 pub struct GetTweet {
     pub id: i32,
     pub content: String,
+    #[bincode(with_serde)]
     pub post_at: chrono::DateTime<chrono::FixedOffset>,
     pub heart: i32,
     pub igid: Option<String>,
@@ -86,7 +88,7 @@ pub async fn get_tweet_db(
     if let Some(ptr) = cursor {
         _cursor.before(ptr).after(ptr.saturating_sub(length));
     } else {
-        _cursor.first(length as u64);
+        _cursor.last(length as u64);
     }
     let mut response = _cursor
         .all(db)

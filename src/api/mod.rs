@@ -1,6 +1,5 @@
 mod tweet;
 
-use actix_session::SessionGetError;
 use actix_web::{HttpResponse, Responder, error, http::StatusCode, web::Json};
 use sea_orm::{DatabaseConnection, DbErr};
 use serde::Serialize;
@@ -40,12 +39,6 @@ impl From<DbErr> for CommonErrEnum {
         // impl log
         println!("DBErr {}", value.to_string());
         Self::DbErr
-    }
-}
-impl From<SessionGetError> for CommonErrEnum {
-    fn from(value: SessionGetError) -> Self {
-        // impl log
-        Self::NoLoginUseNick
     }
 }
 impl error::ResponseError for CommonErrEnum {

@@ -1,5 +1,4 @@
 use crate::{api::{CommonErrEnum, CommonErrStruct}, storage::{tweet_db::PostTweetApiResponse, GetTweetResponse}};
-use actix_session::Session;
 use actix_web::{
      get,  post, web::{self, Json}, HttpRequest, Responder, Result
 };
@@ -8,7 +7,7 @@ use crate::storage::tweet_db::PostTweet;
 
 #[derive(Deserialize)]
 struct GetTweetQuery{
-    cursor: Option<u32>
+    cursor: Option<i32>
 }
 
 #[utoipa::path(responses(
@@ -31,16 +30,12 @@ pub async fn get_tweet(data: web::Data<super::AppContext>, query: web::Query<Get
     ),
 )]
 #[post("/tweet")]
-pub async fn post_tweet(tweet: web::Json<PostTweet>, session:Session,data: web::Data<super::AppContext>, _req: HttpRequest) -> Result<impl Responder,CommonErrEnum>{
+pub async fn post_tweet(tweet: web::Json<PostTweet>, data: web::Data<super::AppContext>, _req: HttpRequest) -> Result<impl Responder,CommonErrEnum>{
     // check nick is available
     // set limit
-    let session_id = session.get::<i32>("session_id").map_err(CommonErrEnum::from)?;
-    if tweet.with_nick && session_id.is_none(){
-        return Err(CommonErrEnum::NoLoginUseNick);
-    }
 
     // proccess
     data.storage
         .to_owned()
-        .insert_tweet(&tweet.0, session_id).await.map(Json).map_err(CommonErrEnum::from)
+        .insert_tweet(&tweet.0, None).await.map(Json).map_err(CommonErrEnum::from)
 }
